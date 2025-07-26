@@ -7,9 +7,13 @@
  *
  */
 
+#ifndef HASH_MAP_H
+#define HASH_MAP_H
+
 #include <stddef.h>
 
-#define DEFAULT_BUCKET_SIZE 65000; // 30,000 common english words in most people's vocabulary (~500kb)
+#define DEFAULT_BUCKET_SIZE                                                                       \
+	65000; // 30,000 common english words in most people's vocabulary (~500kb)
 
 typedef struct HashMapEntry {
 	char *key;
@@ -30,3 +34,5 @@ void hashmap_add(HashMap *map, const char *key);
 int hashmap_get(HashMap *map, const char *key, int *out_value);
 
 void hashmap_free(HashMap *map);
+
+#endif

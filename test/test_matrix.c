@@ -8,17 +8,13 @@
 
 #include "../src/tensor.h"
 #include "test.h"
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #define DEFAULT_ROWS 5
 #define DEFAULT_COLS 5
 
-int test_matrix() {
-	Matrix m = create_matrix(DEFAULT_ROWS, DEFAULT_COLS);
-	assert(m.rows == 5 && m.cols == 5 && m.data != NULL);
+void test_matrix() {
+    TEST_MODULE("matrix")
 
-	printf("All matrix tests passed!\n");
-	return TEST_SUCCESS;
+	Matrix m = create_matrix(DEFAULT_ROWS, DEFAULT_COLS);
+	ASSERT_MSG(m.rows == 5 && m.cols == 5 && m.data != NULL, "create matrix");
 }

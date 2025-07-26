@@ -31,8 +31,10 @@ HashMapEntry *__create_hashmap_entry(const char *key, int value) {
 
 HashMap *create_hashmap() {
 	HashMap *map = malloc(sizeof(HashMap));
-	if (!map)
-		return NULL;
+	if (!map) {
+		perror("Failed to malloc HashMap\n");
+		exit(1);
+	}
 
 	map->num_buckets = DEFAULT_BUCKET_SIZE;
 	map->size = 0;
@@ -40,7 +42,8 @@ HashMap *create_hashmap() {
 	map->buckets = calloc(map->num_buckets, sizeof(HashMapEntry *));
 	if (!map->buckets) {
 		free(map);
-		return NULL;
+		perror("Failed to calloc buckets\n");
+		exit(1);
 	}
 
 	return map;
@@ -53,8 +56,7 @@ unsigned long __hash_function(const char *key) {
 
 	int i;
 	for (i = 0; i < key_length; i++) {
-		hash_value =
-		    ((hash_value << HASHMAP_SMALL_FIXED_NUMBER) + hash_value) + key[i];
+		hash_value = ((hash_value << HASHMAP_SMALL_FIXED_NUMBER) + hash_value) + key[i];
 	}
 
 	return hash_value;
@@ -83,7 +85,7 @@ void hashmap_add(HashMap *map, const char *key) {
 	map->size += 1;
 }
 
-int hashmap_get(HashMap *map, const char *key, int *out_value){
+int hashmap_get(HashMap *map, const char *key, int *out_value) {
 	int hashed_index = __hash_function(key) % map->num_buckets;
 	if (map->buckets[hashed_index] == NULL) {
 		return 0;
@@ -91,13 +93,26 @@ int hashmap_get(HashMap *map, const char *key, int *out_value){
 
 	HashMapEntry *current_entry = map->buckets[hashed_index];
 	while (current_entry != NULL) {
-		if (strcmp(current_entry->key, key) == 0){
-            *out_value = current_entry->value;
+		if (strcmp(current_entry->key, key) == 0) {
+			*out_value = current_entry->value;
 			return 1;
-        }
+		}
 	}
 
-    return 0;
+	return 0;
 }
 
-void hashmap_free(HashMap *map);
+void hashmap_free(HashMap *map) {
+	int i;
+	for (i = 0; i < map->num_buckets; i++) {
+		HashMapEntry *current_entry = map->buckets[i];
+		while (current_entry) {
+			HashMapEntry *next_entry = current_entry->next;
+			free(current_entry);
+			current_entry = next_entry;
+		}
+	}
+
+    free(map->buckets);
+    free(map);
+}

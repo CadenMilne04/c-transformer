@@ -7,20 +7,30 @@
  */
 
 #include "test.h"
-#include "test_matrix.c"
 #include "test_hash_map.c"
 #include "test_input_embedding.c"
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "test_matrix.c"
+#include "test_vocab.c"
 
-#define EXIT_SUCCESS 0
+int tests_run = 0;
+int tests_passed = 0;
+int tests_failed = 0;
+
+void print_test_summary(void) {
+	printf("\nTest summary:\n");
+	printf("\tRun:    %d\n", tests_run);
+	printf("\tPassed: %d\n", tests_passed);
+	printf("\tFailed: %d\n", tests_failed);
+	if (tests_failed > 0) {
+		exit(1);
+	}
+}
 
 int main(int argc, char *argv[]) {
-	assert(test_matrix() == TEST_SUCCESS);
-	assert(test_hash_map() == TEST_SUCCESS);
-	assert(test_input_embedding() == TEST_SUCCESS);
+	test_matrix();
+	test_hash_map();
+	test_vocab();
+	test_input_embedding();
 
-	printf("All tests passed!\n");
-	return EXIT_SUCCESS;
+	print_test_summary();
 }

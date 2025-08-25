@@ -14,7 +14,7 @@ Matrix *create_matrix(int rows, int cols) {
 	Matrix *new_matrix = (Matrix *)malloc(sizeof(Matrix));
 	if (!new_matrix) {
 		perror("failed to malloc matrix\n");
-		return NULL;
+		exit(1);
 	}
 	new_matrix->rows = rows;
 	new_matrix->cols = cols;
@@ -22,7 +22,7 @@ Matrix *create_matrix(int rows, int cols) {
 	if (!new_matrix->data) {
 		perror("failed to malloc matrix data\n");
 		free(new_matrix);
-		return NULL;
+		exit(1);
 	}
 
 	return new_matrix;
@@ -31,6 +31,14 @@ Matrix *create_matrix(int rows, int cols) {
 void free_matrix(Matrix *matrix) {
 	free(matrix->data);
 	free(matrix);
+}
+
+void randomize_matrix(Matrix *mat, float scale) {
+	for (int i = 0; i < mat->rows; i++) {
+		for (int j = 0; j < mat->cols; j++) {
+			mat->data[i * mat->rows + j] = ((float)rand() / RAND_MAX) * 2 * scale - scale;
+		}
+	}
 }
 
 void print_matrix(Matrix *matrix) {
@@ -42,7 +50,7 @@ void print_matrix(Matrix *matrix) {
 				printf("%f", matrix->data[i * matrix->cols + j]);
 			} else {
 				printf("%f, ", matrix->data[i * matrix->cols + j]);
-            }
+			}
 		}
 		if (i == matrix->rows - 1) {
 			printf("]");
@@ -51,4 +59,16 @@ void print_matrix(Matrix *matrix) {
 		}
 	}
 	printf("}\n");
+}
+
+void mat_mul(Matrix *out, Matrix *a, Matrix *b) {
+	for (int i = 0; i < a->rows; i++) {
+		for (int j = 0; j < a->cols; j++) {
+			int sum = 0;
+			for (int k = 0; k < b->rows; k++) {
+				sum += mat_get(a, i, k) * mat_get(b, k, j);
+			}
+			mat_set(out, i, j, sum);
+		}
+	}
 }

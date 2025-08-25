@@ -20,7 +20,7 @@ void load_vocab_from_file(Vocab *vocab, const char *file_path) {
 	FILE *file = fopen(file_path, "r");
 	if (!file) {
 		fprintf(stderr, "Failed to open file: %s\n", file_path);
-		exit(0);
+		exit(1);
 	}
 
 	while (fgets(buf, sizeof(buf), file)) {

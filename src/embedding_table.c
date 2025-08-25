@@ -11,7 +11,7 @@ Matrix *create_embedding_table(Vocab *vocab) {
 	Matrix *embedding_table = create_matrix(vocab->num_words, D_MODEL);
 	if (!embedding_table) {
 		perror("failed to create embedding table\n");
-		return NULL;
+		exit(1);
 	}
 
 	/* initialize the embedding table to small random floats for each word*/

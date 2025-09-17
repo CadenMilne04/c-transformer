@@ -43,43 +43,51 @@ MultiHeadAttention *create_multihead_attention() {
 	return mha;
 }
 
-/* input is a sequence of tokens by d_model */
-/* section 3.2.1 */
-void multihead_attention_forward(MultiHeadAttention *mha, Matrix *input_encoding) {
-	/* for each head */
+/* source: attention is all you need - section 3.2.1 */
+Matrix *calculate_attention(Matrix *input_encoding, Matrix *W_queries, Matrix *W_keys,
+                            Matrix *W_values) {
 	int sequence_length = input_encoding->rows;
-    Matrix *concatted_outputs = create_matrix(sequence_length, D_MODEL);
+
+	Matrix *Q = create_matrix(sequence_length, D_HEAD);
+	mat_mul(Q, input_encoding, W_queries);
+
+	Matrix *K = create_matrix(sequence_length, D_HEAD);
+	mat_mul(K, input_encoding, W_keys);
+
+	Matrix *V = create_matrix(sequence_length, D_HEAD);
+	mat_mul(V, input_encoding, W_values);
+
+	Matrix *K_T = create_matrix(D_HEAD, sequence_length);
+	mat_transpose(K_T, K);
+
+	Matrix *scores = create_matrix(sequence_length, sequence_length);
+	mat_mul(scores, Q, K_T);
+
+	mat_div_scalar(scores, sqrt(D_HEAD));
+
+	mat_rowwise_softmax(scores);
+
+	Matrix *weighted_sum = create_matrix(sequence_length, D_HEAD);
+	mat_mul(weighted_sum, scores, V);
+
+	free_matrix(Q);
+	free_matrix(K);
+	free_matrix(V);
+	free_matrix(K_T);
+	free_matrix(scores);
+
+	return weighted_sum;
+}
+
+void multihead_attention_forward(MultiHeadAttention *mha, Matrix *input_encoding) {
+	int sequence_length = input_encoding->rows;
+	Matrix *concatted_heads = create_matrix(sequence_length, D_MODEL);
 	for (int i = 0; i < NUM_HEADS; i++) {
-		/* 1. compute q,k,v */
-		Matrix *Q = create_matrix(sequence_length, D_HEAD);
-		mat_mul(Q, mha->heads[i]->W_queries, input_encoding);
+		Matrix *head_attention_output =
+		    calculate_attention(input_encoding, mha->heads[i]->W_queries, mha->heads[i]->W_keys,
+		                        mha->heads[i]->W_values);
 
-		Matrix *K = create_matrix(sequence_length, D_HEAD);
-		mat_mul(K, mha->heads[i]->W_keys, input_encoding);
-
-		Matrix *V = create_matrix(sequence_length, D_HEAD);
-		mat_mul(V, mha->heads[i]->W_values, input_encoding);
-
-		/* 2. compute attention */
-		Matrix *attention = create_matrix(sequence_length, D_MODEL);
-		// (QK^T)/sqrt(d_k)
-		Matrix *K_transpose = create_matrix(D_HEAD, sequence_length);
-		mat_transpose(K_transpose, K);
-		Matrix *Q_K_transpose = create_matrix(sequence_length, sequence_length);
-		mat_mul(Q_K_transpose, Q, K_transpose);
-		double sqrt_d_head = sqrt(D_HEAD);
-
-		// scalar division
-		for (int i = 0; i < Q_K_transpose->rows; i++) {
-			for (int j = 0; j < Q_K_transpose->cols; j++) {
-				mat_set(Q_K_transpose, i, j, mat_get(Q_K_transpose, i, j) / sqrt_d_head);
-			}
-		}
-
-        mat_rowwise_softmax(Q_K_transpose);
-        Matrix *head_output = create_matrix(sequence_length, D_HEAD);
-        mat_mul(head_output, Q_K_transpose, V);
+		mat_copy_columns(concatted_heads, head_attention_output, i * D_HEAD);
+		free_matrix(head_attention_output);
 	}
-	/* then, concat outputs from all heads */
-	/* then, apply that final output projection */
 }

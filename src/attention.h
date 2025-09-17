@@ -23,5 +23,6 @@ typedef struct {
 AttentionHead *create_attention_head();
 MultiHeadAttention *create_multihead_attention();
 
-/* input is a sequence of tokens by d_model */
+Matrix *calculate_attention(Matrix *input_encoding, Matrix *W_queries, Matrix *W_keys,
+                            Matrix *W_values);
 void multihead_attention_forward(MultiHeadAttention *mha, Matrix *input_encoding);

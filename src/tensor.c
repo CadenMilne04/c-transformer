@@ -80,6 +80,19 @@ void mat_mul(Matrix *out, Matrix *a, Matrix *b) {
 	}
 }
 
+void mat_div_scalar(Matrix *a, float scalar) {
+	if (scalar == 0.0f) {
+		fprintf(stderr, "Error: Division by zero in mat_div_scalar\n");
+		exit(EXIT_FAILURE);
+	}
+
+	for (int i = 0; i < a->rows; i++) {
+		for (int j = 0; j < a->cols; j++) {
+			mat_set(a, i, j, mat_get(a, i, j) / scalar);
+		}
+	}
+}
+
 /* swaps the rows and the columns */
 void mat_transpose(Matrix *out, Matrix *a) {
 	for (int i = 0; i < a->rows; i++) {
@@ -116,6 +129,14 @@ void mat_concat_columns(Matrix *out, Matrix *a, Matrix *b) {
 	for (int i = 0; i < b->cols; i++) {
 		for (int j = 0; j < b->rows; j++) {
 			mat_set(out, j, a->cols + i, mat_get(b, j, i));
+		}
+	}
+}
+
+void mat_copy_columns(Matrix *out, Matrix *a, int offset_col) {
+	for (int i = 0; i < a->rows; i++) {
+		for (int j = 0; j < a->cols; j++) {
+			mat_set(out, i, offset_col + j, mat_get(a, i, j));
 		}
 	}
 }

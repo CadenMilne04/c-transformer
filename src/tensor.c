@@ -7,6 +7,7 @@
  */
 
 #include "tensor.h"
+#include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -36,7 +37,7 @@ void free_matrix(Matrix *matrix) {
 void randomize_matrix(Matrix *mat, float scale) {
 	for (int i = 0; i < mat->rows; i++) {
 		for (int j = 0; j < mat->cols; j++) {
-			mat->data[i * mat->rows + j] = ((float)rand() / RAND_MAX) * 2 * scale - scale;
+			mat->data[i * mat->cols + j] = ((float)rand() / RAND_MAX) * 2 * scale - scale;
 		}
 	}
 }
@@ -62,6 +63,12 @@ void print_matrix(Matrix *matrix) {
 }
 
 void mat_mul(Matrix *out, Matrix *a, Matrix *b) {
+	if (a->cols != b->rows) {
+		fprintf(stderr, "Error: Multiplying incompatible matrices (%d x %d) * (%d x %d)\n",
+		        a->rows, a->cols, b->rows, b->cols);
+		exit(EXIT_FAILURE);
+	}
+
 	for (int i = 0; i < a->rows; i++) {
 		for (int j = 0; j < a->cols; j++) {
 			int sum = 0;
@@ -69,6 +76,46 @@ void mat_mul(Matrix *out, Matrix *a, Matrix *b) {
 				sum += mat_get(a, i, k) * mat_get(b, k, j);
 			}
 			mat_set(out, i, j, sum);
+		}
+	}
+}
+
+/* swaps the rows and the columns */
+void mat_transpose(Matrix *out, Matrix *a) {
+	for (int i = 0; i < a->rows; i++) {
+		for (int j = 0; j < a->cols; j++) {
+			mat_set(out, j, i, mat_get(a, i, j));
+		}
+	}
+}
+
+void mat_rowwise_softmax(Matrix *a) {
+	/* use the re-centering around 0 trick to prevent overflow */
+	for (int i = 0; i < a->rows; i++) {
+		float row_max = -FLT_MAX;
+		for (int j = 0; j < a->cols; j++) {
+			row_max = mat_get(a, i, j) > row_max ? mat_get(a, i, j) : row_max;
+		}
+		float row_total = 0;
+		for (int j = 0; j < a->cols; j++) {
+			row_total += expf(mat_get(a, i, j) - row_max);
+		}
+		for (int j = 0; j < a->cols; j++) {
+			float softmax_val = expf(mat_get(a, i, j) - row_max) / row_total;
+			mat_set(a, i, j, softmax_val);
+		}
+	}
+}
+
+void mat_concat_columns(Matrix *out, Matrix *a, Matrix *b) {
+	for (int i = 0; i < a->rows; i++) {
+		for (int j = 0; j < b->cols; j++) {
+			mat_set(out, i, j, mat_get(a, i, j));
+		}
+	}
+	for (int i = 0; i < b->cols; i++) {
+		for (int j = 0; j < b->rows; j++) {
+			mat_set(out, j, a->cols + i, mat_get(b, j, i));
 		}
 	}
 }

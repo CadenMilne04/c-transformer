@@ -10,9 +10,9 @@
 #include "tensor.h"
 
 typedef struct {
-	Matrix *W_queries; // [D_MODEL x D_MODEL]
-	Matrix *W_keys;    // [D_MODEL x D_MODEL]
-	Matrix *W_values;  // [D_MODEL x D_MODEL]
+	Matrix *W_queries; // [D_MODEL x D_HEAD]
+	Matrix *W_keys;    // [D_MODEL x D_HEAD]
+	Matrix *W_values;  // [D_MODEL x D_HEAD]
 } AttentionHead;
 
 typedef struct {

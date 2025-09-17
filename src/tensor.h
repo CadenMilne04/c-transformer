@@ -36,4 +36,10 @@ void free_matrix(Matrix *matrix);
 
 void mat_mul(Matrix* out, Matrix* a, Matrix* b);
 
+void mat_transpose(Matrix* out, Matrix* a);
+
+void mat_rowwise_softmax(Matrix* a);
+
+void mat_concat_columns(Matrix *out, Matrix* a, Matrix* b);
+
 #endif 

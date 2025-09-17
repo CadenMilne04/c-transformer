@@ -10,7 +10,7 @@ void test_attention() {
 
 	AttentionHead *ah = create_attention_head();
 	ASSERT_MSG(ah->W_queries->data[0] >= -.1, "Data inside query weight should be random");
-	ASSERT_MSG(ah->W_queries->rows == D_MODEL && ah->W_queries->cols == D_MODEL, "create head");
+	ASSERT_MSG(ah->W_queries->rows == D_MODEL && ah->W_queries->cols == D_HEAD, "create head");
 
 	MultiHeadAttention *mah = create_multihead_attention();
 	ASSERT_MSG(mah->heads[1]->W_queries->rows == D_MODEL, "creating multihead attention");
